@@ -540,48 +540,50 @@ const Home = () => {
   return (
     <Main>
       <Header>
-        장윤석
+        오현규
         <hr />
-        서보라
+        오미란
       </Header>
       <CoverPicWrap>
         <Image src={coverPic} priority={true} placeholder="blur" alt="" />
       </CoverPicWrap>
       <p>
-        2022년 12월 4일 일요일 오후 12시 20분
+        2025.9.21 일요일 오후 5시 30분
         <br />
-        더컨벤션 잠실 (교통회관) 3층 아모르홀
+        보넬리가든
       </p>
 
 
       <SectionHr />
 
-      <SectionHeader>아름다운 날. <br/>소중한 분을 초대합니다.</SectionHeader>
+      <SectionHeader>아름다운 날 <br/>저희 결혼합니다.</SectionHeader>
       <GreetingP>
-        저희 둘 소중한 만남으로
+        청명한 가을날
         <br />
-        축복 속에서 한 가정을 이루려고 합니다.
+        소중한 분들의 축복 속에서
         <br />
-        서로 존중하고 신뢰를 쌓으며
+        한 가정을 이루려고 합니다.
         <br />
-        사랑을 키워나갈 수 있도록
+        
         <br />
-        오셔서 자리를 빛내주시면 감사하겠습니다.
+        저희의 시작하는 모습을
+        <br />
+        여러분과 함께하고 싶습니다.
       </GreetingP>
       <GreetingP>
-        장문수 · 한은희의 장남 윤석
+        (故)오종호 · 지승희의 장남 현규
         <br />
-        서영거 · 김애영의 차녀 보라
+        오혜근 · 홍영예의 차녀 미란
       </GreetingP>
       <CallWrap>
-        <a href="tel:01030071430">
+        <a href="tel:01049148815">
           <CallButton
             icon={<EmojiLookRight />}
             bgColor="#abdaab"
             label="신랑측에 연락하기"
           />
         </a>
-        <a href="tel:01097484110">
+        <a href="tel:01085225457">
           <CallButton
             icon={<EmojiLookLeft />}
             bgColor="#c2e0a3"
@@ -616,42 +618,64 @@ const Home = () => {
       <SectionHeader>🧭 오시는 길</SectionHeader>
       <Image src={mapPic} width="395px" height="250px" alt="" />
       <p>
-        서울 송파구 올림픽로 319 (신천동 11-7)
+        서울 서초구 샘마루길 11
         <br />
-        (잠실역 9번 출구 바로 앞 위치)
+        보넬리가든
         <br />
-        더컨벤션 잠실 (교통회관) 3층 아모르홀
+        📞 02-451-6166
       </p>
-      <MapButton href="https://place.map.kakao.com/17651361">
+      <MapButton href="https://kko.kakao.com/Cx8mtB70M6">
         <PinAlt color="#1199EE" /> 카카오맵
       </MapButton>
-      <MapButton href="https://naver.me/xC61fokj">
+      <MapButton href="https://naver.me/GYCqKhaF">
         <PinAlt color="#66BB66" /> 네이버지도
       </MapButton>
 
 
       <p>
         <br/>
-        주차 이용 시간은 2시간 입니다.
+        <font size="6" face="arial" color="#F08080">셔틀버스</font>
         <br />
-        당일 혼잡할 가능성이 있사오니
+        신분당선 양재시민의숲역 4번 출구 앞 운행
         <br />
-        가급적 대중교통 이용 부탁드립니다.
+        <br />
+        <font size="6" face="arial" color="#F08080">주차 안내</font>
+        <br />
+        서울시 서초구 샘마루길 34-14
+        <br />
+        ☺️ 강동송파주차장
       </p>
 
       <SectionHr />
-
+      <SectionHeader>안내사항</SectionHeader>
       <p>
-        축하로 보내주시는 화환 대신 쌀드리미 화환으로 보내주시면
+        식사는 2부 예식과 함께 진행됩니다.
         <br />
-        좋은 날 소외받는 이웃과 함께 사랑의 쌀을 나누겠습니다.
+        식사 후 포토부스 & 방명록이
         <br />
-        문의처: 쌀화환 드리米 / <a href="tel:0215448489">1544-8489</a> / <a href="https://dreame.co.kr">dreame.co.kr</a>
+        7시에 설지될 예정입니다.
+        <br />
+        마음껏 사진 찍으시고
+        <br />
+        방명록도 남겨주세요:)
+        <br />
+        인원 수 x 2장씩 인쇄되오니
+        <br />
+        한 장은 소장하실 수 있습니다. 😊
+        <br />
+        (결혼식 이벤트? 간단한 식순?)
       </p>
 
       <SectionHr />
-      <SectionHeader>💸 마음 전하실 곳</SectionHeader>
+      <SectionHeader>🌸 마음 전하실 곳</SectionHeader>
       <GiveWrap>
+        <p>
+          <strong>👰 신부측</strong>
+          <br />
+          오미란 국민은행 <CopyText text="9-10-5674-1102" />
+          <br />
+          <CopyText text="예시4" />
+        </p>
         <p>
           <strong>🤵 신랑측</strong>
           <br />
@@ -659,13 +683,6 @@ const Home = () => {
           <br />
           <CopyText text="예시2" />
 
-        </p>
-        <p>
-          <strong>👰 신부측</strong>
-          <br />
-          <CopyText text="예시3" />
-          <br />
-          <CopyText text="예시4" />
         </p>
       </GiveWrap>
 

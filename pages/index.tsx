@@ -7,10 +7,10 @@ const HomePage = () => {
   return (
     <>
       <Head>
-        <title>장윤석 ♡ 서보라</title>
+        <title>오현규 ♡ 오미란</title>
         <meta
           name="description"
-          content="장윤석 ♡ 서보라 2022년 12월 4일에 결혼합니다."
+          content="오미란 ♡ 오현규 2025년 9월 21일에 결혼합니다."
         />
         <meta
           name="viewport"
@@ -19,16 +19,16 @@ const HomePage = () => {
         <meta name="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
         
-        <meta property="og:title" content="장윤석 ♡ 서보라 청첩장" />
-        <meta name="twitter:title" content="장윤석 ♡ 서보라 청첩장" />
+        <meta property="og:title" content="오현규 ♡ 오미란 청첩장" />
+        <meta name="twitter:title" content="오현규 ♡ 오미란 청첩장" />
             
         <meta
           property="og:description"
-          content="장윤석 ♡ 서보라 2022년 12월 4일 12시 20분, 잠실 더컨벤션 아모르홀에서 결혼합니다."
+          content="오미란 ♡ 오현규 2025년 9월 21일 5시, 보넬리가든에서 결혼합니다."
         />
         <meta 
           name="twitter:description"
-          content="장윤석 ♡ 서보라 2022년 12월 4일 12시 20분, 잠실 더컨벤션 아모르홀에서 결혼합니다."
+          content="오미란 ♡ 오현규 2025년 9월 21일 5시, 보넬리가든에서 결혼합니다."
         />
         <meta
           property="og:image"
