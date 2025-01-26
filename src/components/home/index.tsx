@@ -634,16 +634,16 @@ const Home = () => {
 
       <p>
         <br/>
-        <font size="6" face="arial" color="#F08080">셔틀버스</font>
+        <b>셔틀버스</b>
         <br />
         신분당선 양재시민의숲역 4번 출구 앞 운행
         <br />
         <br />
-        <font size="6" face="arial" color="#F08080">주차 안내</font>
+        <b style={{ color: "#F08080" }}>주차 안내</b>
         <br />
         서울시 서초구 샘마루길 34-14
         <br />
-        ☺️ 강동송파주차장
+        서초과학화예비군훈련장 강동송파주차장
       </p>
 
       <SectionHr />
