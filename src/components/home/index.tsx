@@ -715,7 +715,7 @@ const Home = () => {
         <br/>
         <b style={{ color: "#F08080" }}>Shuttle Bus</b>
         <br />
-        Shinbundang Line, Yangjae Citizen's Forest Station Exit 4
+        Shinbundang Line, Yangjae Citizen&apos;s Forest Station Exit 4
         <br />
         <br />
         <b style={{ color: "#F08080" }}>Parking</b>
@@ -760,8 +760,8 @@ const Home = () => {
       <SectionHr />
       <SectionHeader style={{ color: "#F08080" }}>💬 Messages to us</SectionHeader>
       <WriteSectionSubHeader>
-        <p>Groom's</p>
-        <p>Bride's</p>
+        <p>Groom&apos;s</p>
+        <p>Bride&apos;s</p>
       </WriteSectionSubHeader>
       <div style={{ clear: "both" }} />
       <TalkWrap>
