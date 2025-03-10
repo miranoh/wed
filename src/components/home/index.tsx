@@ -22,7 +22,6 @@ import coverPic from "@/public/photos/cover.jpg";
 import mapPic from "@/public/photos/map.jpg";
 import pinIcon from '@/public/location-pin.png';
 import { INFORMATION } from '@/components/common/value';
-import AttendModal from '@/components/common/AttendModal';
 // import { Gallery, Item } from 'react-photoswipe-gallery';
 import 'photoswipe/style.css';
 // import { Container as MapDiv, NaverMap, Marker, useNavermaps} from 'react-naver-maps';
@@ -662,22 +661,22 @@ const Home = () => {
             speed={[0.2, 1]}
             style={{ opacity: 0.35 }}
           />
-        청명한 가을날
+        On a breezing autumn day,
         <br />
-        소중한 분들의 축복 속에서
+        surrounded by the blessings of our dear ones,
         <br />
-        한 가정을 이루려고 합니다.
+        we are about to begin a new family.
         <br />
         
         <br />
-        설레는 이 시작의 순간에
+        We would be honored if you could join us
         <br />
-        함께 자리를 빛내주시면 감사하겠습니다.
+        to share in the joy of this exciting new chapter.
       </GreetingP>
       <GreetingP>
-        (故)오종호 · 지승희의 아들 현규
+        The son of the late Jongho Oh & Ji Seunghee | Denny
         <br />
-        오혜근 · 홍영예의 딸 미란
+        The daughter of Hyekeun Oh & Youngyeah Hong | Miran
       </GreetingP>
       <SectionHr />
       <PhotoGrid>
