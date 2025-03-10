@@ -1,0 +1,1299 @@
+diff --git a/node_modules/react-snowfall/lib/SnowfallCanvas.js b/node_modules/react-snowfall/lib/SnowfallCanvas.js
+index 7be8a9c..6457a28 100644
+--- a/node_modules/react-snowfall/lib/SnowfallCanvas.js
++++ b/node_modules/react-snowfall/lib/SnowfallCanvas.js
+@@ -1,115 +1,164 @@
+-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+-};
+-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+-    if (kind === "m") throw new TypeError("Private method is not writable");
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+-};
++var __classPrivateFieldGet =
++  (this && this.__classPrivateFieldGet) ||
++  function (receiver, state, kind, f) {
++    if (kind === 'a' && !f)
++      throw new TypeError('Private accessor was defined without a getter');
++    if (
++      typeof state === 'function'
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        'Cannot read private member from an object whose class did not declare it'
++      );
++    return kind === 'm'
++      ? f
++      : kind === 'a'
++      ? f.call(receiver)
++      : f
++      ? f.value
++      : state.get(receiver);
++  };
++var __classPrivateFieldSet =
++  (this && this.__classPrivateFieldSet) ||
++  function (receiver, state, value, kind, f) {
++    if (kind === 'm') throw new TypeError('Private method is not writable');
++    if (kind === 'a' && !f)
++      throw new TypeError('Private accessor was defined without a setter');
++    if (
++      typeof state === 'function'
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        'Cannot write private member to an object whose class did not declare it'
++      );
++    return (
++      kind === 'a'
++        ? f.call(receiver, value)
++        : f
++        ? (f.value = value)
++        : state.set(receiver, value),
++      value
++    );
++  };
+ var _SnowfallCanvas_ctx, _SnowfallCanvas_canvas;
+ import Snowflake, { defaultConfig } from './Snowflake.js';
+ import { targetFrameTime } from './config.js';
+ export class SnowfallCanvas {
+-    get ctx() {
+-        return __classPrivateFieldGet(this, _SnowfallCanvas_ctx, "f");
++  get ctx() {
++    return __classPrivateFieldGet(this, _SnowfallCanvas_ctx, 'f');
++  }
++  get canvas() {
++    return __classPrivateFieldGet(this, _SnowfallCanvas_canvas, 'f');
++  }
++  set canvas(canvas) {
++    __classPrivateFieldSet(this, _SnowfallCanvas_canvas, canvas, 'f');
++    __classPrivateFieldSet(
++      this,
++      _SnowfallCanvas_ctx,
++      canvas.getContext('2d'),
++      'f'
++    );
++  }
++  constructor(canvas, config) {
++    this.lastUpdate = Date.now();
++    this.snowflakes = [];
++    _SnowfallCanvas_ctx.set(this, void 0);
++    _SnowfallCanvas_canvas.set(this, void 0);
++    __classPrivateFieldSet(this, _SnowfallCanvas_canvas, canvas, 'f');
++    __classPrivateFieldSet(
++      this,
++      _SnowfallCanvas_ctx,
++      canvas.getContext('2d'),
++      'f'
++    );
++    this.config = { snowflakeCount: 150, ...defaultConfig, ...config };
++    this.snowflakes = [];
++    this.snowflakes = Snowflake.createSnowflakes(
++      canvas,
++      config.snowflakeCount || 150,
++      config
++    );
++    this.play();
++  }
++  /**
++   * Updates the config used for the snowfall animation, if the number of snowflakes
++   * has changed then this will create new or remove existing snowflakes gracefully
++   * to retain the position of as many existing snowflakes as possible.
++   */
++  updateConfig(config) {
++    this.config = { ...this.config, ...config };
++    const sizeDifference = this.config.snowflakeCount - this.snowflakes.length;
++    if (sizeDifference > 0) {
++      this.snowflakes = [
++        ...this.snowflakes,
++        ...Snowflake.createSnowflakes(this.canvas, sizeDifference, config),
++      ];
+     }
+-    get canvas() {
+-        return __classPrivateFieldGet(this, _SnowfallCanvas_canvas, "f");
++    if (sizeDifference < 0) {
++      this.snowflakes = this.snowflakes.slice(0, this.config.snowflakeCount);
+     }
+-    set canvas(canvas) {
+-        __classPrivateFieldSet(this, _SnowfallCanvas_canvas, canvas, "f");
+-        __classPrivateFieldSet(this, _SnowfallCanvas_ctx, canvas.getContext('2d'), "f");
++    for (const snowflake of this.snowflakes) {
++      snowflake.updateConfig(this.config);
+     }
+-    constructor(canvas, config) {
+-        this.lastUpdate = Date.now();
+-        this.snowflakes = [];
+-        _SnowfallCanvas_ctx.set(this, void 0);
+-        _SnowfallCanvas_canvas.set(this, void 0);
+-        __classPrivateFieldSet(this, _SnowfallCanvas_canvas, canvas, "f");
+-        __classPrivateFieldSet(this, _SnowfallCanvas_ctx, canvas.getContext('2d'), "f");
+-        this.config = { snowflakeCount: 150, ...defaultConfig, ...config };
+-        this.snowflakes = [];
+-        this.snowflakes = Snowflake.createSnowflakes(canvas, config.snowflakeCount || 150, config);
+-        this.play();
++  }
++  /**
++   * Updates the location of each snowflake based on the number of frames passed then
++   * clears the canvas and draws each snowflake.
++   */
++  render(framesPassed = 1) {
++    const { ctx, canvas, snowflakes } = this;
++    if (!ctx || !canvas) return;
++    const { offsetWidth, offsetHeight } = canvas;
++    // Update the position of each snowflake
++    for (const snowflake of snowflakes) {
++      snowflake.update(offsetWidth, offsetHeight, framesPassed);
+     }
+-    /**
+-     * Updates the config used for the snowfall animation, if the number of snowflakes
+-     * has changed then this will create new or remove existing snowflakes gracefully
+-     * to retain the position of as many existing snowflakes as possible.
+-     */
+-    updateConfig(config) {
+-        this.config = { ...this.config, ...config };
+-        const sizeDifference = this.config.snowflakeCount - this.snowflakes.length;
+-        if (sizeDifference > 0) {
+-            this.snowflakes = [...this.snowflakes, ...Snowflake.createSnowflakes(this.canvas, sizeDifference, config)];
+-        }
+-        if (sizeDifference < 0) {
+-            this.snowflakes = this.snowflakes.slice(0, this.config.snowflakeCount);
+-        }
+-        for (const snowflake of this.snowflakes) {
+-            snowflake.updateConfig(this.config);
+-        }
++    // Render the snowflakes
++    ctx.setTransform(1, 0, 0, 1, 0, 0);
++    ctx.clearRect(0, 0, offsetWidth, offsetHeight);
++    // If using images, draw each image individually
++    if (this.config.images && this.config.images.length > 0) {
++      for (const snowflake of snowflakes) {
++        snowflake.drawImage(ctx);
++      }
++      return;
+     }
+-    /**
+-     * Updates the location of each snowflake based on the number of frames passed then
+-     * clears the canvas and draws each snowflake.
+-     */
+-    render(framesPassed = 1) {
+-        const { ctx, canvas, snowflakes } = this;
+-        if (!ctx || !canvas)
+-            return;
+-        const { offsetWidth, offsetHeight } = canvas;
+-        // Update the position of each snowflake
+-        for (const snowflake of snowflakes) {
+-            snowflake.update(offsetWidth, offsetHeight, framesPassed);
+-        }
+-        // Render the snowflakes
+-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+-        ctx.clearRect(0, 0, offsetWidth, offsetHeight);
+-        // If using images, draw each image individually
+-        if (this.config.images && this.config.images.length > 0) {
+-            for (const snowflake of snowflakes) {
+-                snowflake.drawImage(ctx);
+-            }
+-            return;
+-        }
+-        // Not using images, draw circles in a single path
+-        ctx.beginPath();
+-        for (const snowflake of snowflakes) {
+-            snowflake.drawCircle(ctx);
+-        }
+-        ctx.fillStyle = this.config.color;
+-        ctx.fill();
++    // Not using images, draw circles in a single path
++    ctx.beginPath();
++    for (const snowflake of snowflakes) {
++      snowflake.drawPetal(ctx);
+     }
+-    /**
+-     * The animation loop, will calculate the time since the last render and update
+-     * the position of the snowflakes appropriately before queueing another frame.
+-     */
+-    loop() {
+-        // Update based on time passed so that a slow frame rate won't slow down the snowflake
+-        const now = Date.now();
+-        const msPassed = Date.now() - this.lastUpdate;
+-        this.lastUpdate = now;
+-        // Frames that would have passed if running at 60 fps
+-        const framesPassed = msPassed / targetFrameTime;
+-        this.render(framesPassed);
+-        this.animationFrame = requestAnimationFrame(() => this.loop());
+-    }
+-    /** Start the animation playing. */
+-    play() {
+-        this.loop();
+-    }
+-    /** Pause the animation. */
+-    pause() {
+-        if (this.animationFrame) {
+-            cancelAnimationFrame(this.animationFrame);
+-            this.animationFrame = undefined;
+-        }
++    ctx.fillStyle = this.config.color;
++    ctx.fill();
++  }
++  /**
++   * The animation loop, will calculate the time since the last render and update
++   * the position of the snowflakes appropriately before queueing another frame.
++   */
++  loop() {
++    // Update based on time passed so that a slow frame rate won't slow down the snowflake
++    const now = Date.now();
++    const msPassed = Date.now() - this.lastUpdate;
++    this.lastUpdate = now;
++    // Frames that would have passed if running at 60 fps
++    const framesPassed = msPassed / targetFrameTime;
++    this.render(framesPassed);
++    this.animationFrame = requestAnimationFrame(() => this.loop());
++  }
++  /** Start the animation playing. */
++  play() {
++    this.loop();
++  }
++  /** Pause the animation. */
++  pause() {
++    if (this.animationFrame) {
++      cancelAnimationFrame(this.animationFrame);
++      this.animationFrame = undefined;
+     }
++  }
+ }
+-_SnowfallCanvas_ctx = new WeakMap(), _SnowfallCanvas_canvas = new WeakMap();
++(_SnowfallCanvas_ctx = new WeakMap()), (_SnowfallCanvas_canvas = new WeakMap());
+ export default SnowfallCanvas;
+ //# sourceMappingURL=SnowfallCanvas.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-snowfall/lib/Snowflake.js b/node_modules/react-snowfall/lib/Snowflake.js
+index 89107c7..efc3b38 100644
+--- a/node_modules/react-snowfall/lib/Snowflake.js
++++ b/node_modules/react-snowfall/lib/Snowflake.js
+@@ -1,159 +1,215 @@
+ import isEqual from 'react-fast-compare';
+ import { lerp, random, randomElement, twoPi } from './utils.js';
+ export const defaultConfig = {
+-    color: '#dee4fd',
+-    radius: [0.5, 3.0],
+-    speed: [1.0, 3.0],
+-    wind: [-0.5, 2.0],
+-    changeFrequency: 200,
+-    rotationSpeed: [-1.0, 1.0],
++  color: '#dee4fd',
++  radius: [0.5, 3.0],
++  speed: [1.0, 3.0],
++  wind: [-0.5, 2.0],
++  changeFrequency: 200,
++  rotationSpeed: [-1.0, 1.0],
+ };
+ /**
+  * An individual snowflake that will update it's location every call to `update`
+  * and draw itself to the canvas every call to `draw`.
+  */
+ class Snowflake {
+-    /**
+-     * A utility function to create a collection of snowflakes
+-     * @param canvas The canvas element
+-     * @param amount The number of snowflakes
+-     * @param config The configuration for each snowflake
+-     */
+-    static createSnowflakes(canvas, amount, config) {
+-        if (!canvas)
+-            return [];
+-        const snowflakes = [];
+-        for (let i = 0; i < amount; i++) {
+-            snowflakes.push(new Snowflake(canvas, config));
+-        }
+-        return snowflakes;
++  /**
++   * A utility function to create a collection of snowflakes
++   * @param canvas The canvas element
++   * @param amount The number of snowflakes
++   * @param config The configuration for each snowflake
++   */
++  static createSnowflakes(canvas, amount, config) {
++    if (!canvas) return [];
++    const snowflakes = [];
++    for (let i = 0; i < amount; i++) {
++      snowflakes.push(new Snowflake(canvas, config));
+     }
+-    constructor(canvas, config = {}) {
+-        // Set custom config
+-        this.updateConfig(config);
+-        // Setting initial parameters
+-        const { radius, wind, speed, rotationSpeed } = this.config;
+-        this.params = {
+-            x: random(0, canvas.offsetWidth),
+-            y: random(-canvas.offsetHeight, 0),
+-            rotation: random(0, 360),
+-            radius: random(...radius),
+-            speed: random(...speed),
+-            wind: random(...wind),
+-            rotationSpeed: random(...rotationSpeed),
+-            nextSpeed: random(...wind),
+-            nextWind: random(...speed),
+-            nextRotationSpeed: random(...rotationSpeed),
+-        };
+-        this.framesSinceLastUpdate = 0;
++    return snowflakes;
++  }
++  constructor(canvas, config = {}) {
++    // Set custom config
++    this.updateConfig(config);
++    // Setting initial parameters
++    const { radius, wind, speed, rotationSpeed } = this.config;
++    this.params = {
++      x: random(0, canvas.offsetWidth),
++      y: random(-canvas.offsetHeight, 0),
++      rotation: random(0, 360),
++      radius: random(...radius),
++      speed: random(...speed),
++      wind: random(...wind),
++      rotationSpeed: random(...rotationSpeed),
++      nextSpeed: random(...wind),
++      nextWind: random(...speed),
++      nextRotationSpeed: random(...rotationSpeed),
++    };
++    this.framesSinceLastUpdate = 0;
++  }
++  selectImage() {
++    if (this.config.images && this.config.images.length > 0) {
++      this.image = randomElement(this.config.images);
++    } else {
++      this.image = undefined;
+     }
+-    selectImage() {
+-        if (this.config.images && this.config.images.length > 0) {
+-            this.image = randomElement(this.config.images);
+-        }
+-        else {
+-            this.image = undefined;
+-        }
++  }
++  updateConfig(config) {
++    const previousConfig = this.config;
++    this.config = { ...defaultConfig, ...config };
++    this.config.changeFrequency = random(
++      this.config.changeFrequency,
++      this.config.changeFrequency * 1.5
++    );
++    // Update the radius if the config has changed, it won't gradually update on it's own
++    if (
++      this.params &&
++      !isEqual(
++        this.config.radius,
++        previousConfig === null || previousConfig === void 0
++          ? void 0
++          : previousConfig.radius
++      )
++    ) {
++      this.params.radius = random(...this.config.radius);
+     }
+-    updateConfig(config) {
+-        const previousConfig = this.config;
+-        this.config = { ...defaultConfig, ...config };
+-        this.config.changeFrequency = random(this.config.changeFrequency, this.config.changeFrequency * 1.5);
+-        // Update the radius if the config has changed, it won't gradually update on it's own
+-        if (this.params && !isEqual(this.config.radius, previousConfig === null || previousConfig === void 0 ? void 0 : previousConfig.radius)) {
+-            this.params.radius = random(...this.config.radius);
+-        }
+-        if (!isEqual(this.config.images, previousConfig === null || previousConfig === void 0 ? void 0 : previousConfig.images)) {
+-            this.selectImage();
+-        }
++    if (
++      !isEqual(
++        this.config.images,
++        previousConfig === null || previousConfig === void 0
++          ? void 0
++          : previousConfig.images
++      )
++    ) {
++      this.selectImage();
+     }
+-    updateTargetParams() {
+-        this.params.nextSpeed = random(...this.config.speed);
+-        this.params.nextWind = random(...this.config.wind);
+-        if (this.image) {
+-            this.params.nextRotationSpeed = random(...this.config.rotationSpeed);
+-        }
++  }
++  updateTargetParams() {
++    this.params.nextSpeed = random(...this.config.speed);
++    this.params.nextWind = random(...this.config.wind);
++    if (this.image) {
++      this.params.nextRotationSpeed = random(...this.config.rotationSpeed);
+     }
+-    update(offsetWidth, offsetHeight, framesPassed = 1) {
+-        const { x, y, rotation, rotationSpeed, nextRotationSpeed, wind, speed, nextWind, nextSpeed, radius } = this.params;
+-        // Update current location, wrapping around if going off the canvas
+-        this.params.x = (x + wind * framesPassed) % (offsetWidth + radius * 2);
+-        if (this.params.x > offsetWidth + radius)
+-            this.params.x = -radius;
+-        this.params.y = (y + speed * framesPassed) % (offsetHeight + radius * 2);
+-        if (this.params.y > offsetHeight + radius)
+-            this.params.y = -radius;
+-        // Apply rotation
+-        if (this.image) {
+-            this.params.rotation = (rotation + rotationSpeed) % 360;
+-        }
+-        // Update the wind, speed and rotation towards the desired values
+-        this.params.speed = lerp(speed, nextSpeed, 0.01);
+-        this.params.wind = lerp(wind, nextWind, 0.01);
+-        this.params.rotationSpeed = lerp(rotationSpeed, nextRotationSpeed, 0.01);
+-        if (this.framesSinceLastUpdate++ > this.config.changeFrequency) {
+-            this.updateTargetParams();
+-            this.framesSinceLastUpdate = 0;
+-        }
++  }
++  update(offsetWidth, offsetHeight, framesPassed = 1) {
++    const {
++      x,
++      y,
++      rotation,
++      rotationSpeed,
++      nextRotationSpeed,
++      wind,
++      speed,
++      nextWind,
++      nextSpeed,
++      radius,
++    } = this.params;
++    // Update current location, wrapping around if going off the canvas
++    this.params.x = (x + wind * framesPassed) % (offsetWidth + radius * 2);
++    if (this.params.x > offsetWidth + radius) this.params.x = -radius;
++    this.params.y = (y + speed * framesPassed) % (offsetHeight + radius * 2);
++    if (this.params.y > offsetHeight + radius) this.params.y = -radius;
++    // Apply rotation
++    if (this.image) {
++      this.params.rotation = (rotation + rotationSpeed) % 360;
+     }
+-    getImageOffscreenCanvas(image, size) {
+-        var _a, _b;
+-        if (image instanceof HTMLImageElement && image.loading)
+-            return image;
+-        let sizes = Snowflake.offscreenCanvases.get(image);
+-        if (!sizes) {
+-            sizes = {};
+-            Snowflake.offscreenCanvases.set(image, sizes);
+-        }
+-        if (!(size in sizes)) {
+-            const canvas = document.createElement('canvas');
+-            canvas.width = size;
+-            canvas.height = size;
+-            (_a = canvas.getContext('2d')) === null || _a === void 0 ? void 0 : _a.drawImage(image, 0, 0, size, size);
+-            sizes[size] = canvas;
+-        }
+-        return (_b = sizes[size]) !== null && _b !== void 0 ? _b : image;
++    // Update the wind, speed and rotation towards the desired values
++    this.params.speed = lerp(speed, nextSpeed, 0.01);
++    this.params.wind = lerp(wind, nextWind, 0.01);
++    this.params.rotationSpeed = lerp(rotationSpeed, nextRotationSpeed, 0.01);
++    if (this.framesSinceLastUpdate++ > this.config.changeFrequency) {
++      this.updateTargetParams();
++      this.framesSinceLastUpdate = 0;
+     }
+-    /**
+-     * Draws a circular snowflake to the canvas.
+-     *
+-     * This method should only be called if our config does not have images.
+-     *
+-     * This method assumes that a path has already been started on the canvas.
+-     * `ctx.beginPath()` should be called before calling this method.
+-     *
+-     * After calling this method, the fillStyle should be set to the snowflake's
+-     * color and `ctx.fill()` should be called to fill the snowflake.
+-     *
+-     * Calling `ctx.fill()` after multiple snowflakes have had `drawCircle` called
+-     * will render all of the snowflakes since the last call to `ctx.beginPath()`.
+-     *
+-     * @param ctx The canvas context to draw to
+-     */
+-    drawCircle(ctx) {
+-        ctx.moveTo(this.params.x, this.params.y);
+-        ctx.arc(this.params.x, this.params.y, this.params.radius, 0, twoPi);
++  }
++  getImageOffscreenCanvas(image, size) {
++    var _a, _b;
++    if (image instanceof HTMLImageElement && image.loading) return image;
++    let sizes = Snowflake.offscreenCanvases.get(image);
++    if (!sizes) {
++      sizes = {};
++      Snowflake.offscreenCanvases.set(image, sizes);
+     }
+-    /**
+-     * Draws an image-based snowflake to the canvas.
+-     *
+-     * This method should only be called if our config has images.
+-     *
+-     * @param ctx The canvas context to draw to
+-     */
+-    drawImage(ctx) {
+-        const { x, y, rotation, radius } = this.params;
+-        const radian = (rotation * Math.PI) / 180;
+-        const cos = Math.cos(radian);
+-        const sin = Math.sin(radian);
+-        // Translate to the location that we will be drawing the snowflake, including any rotation that needs to be applied
+-        // The arguments for setTransform are: a, b, c, d, e, f
+-        // a (scaleX), b (skewY), c (skewX), d (scaleY), e (translateX), f (translateY)
+-        ctx.setTransform(cos, sin, -sin, cos, x, y);
+-        // Draw the image with the center of the image at the center of the current location
+-        const image = this.getImageOffscreenCanvas(this.image, radius);
+-        ctx.drawImage(image, -(radius / 2), -(radius / 2), radius, radius);
++    if (!(size in sizes)) {
++      const canvas = document.createElement('canvas');
++      canvas.width = size;
++      canvas.height = size;
++      (_a = canvas.getContext('2d')) === null || _a === void 0
++        ? void 0
++        : _a.drawImage(image, 0, 0, size, size);
++      sizes[size] = canvas;
+     }
++    return (_b = sizes[size]) !== null && _b !== void 0 ? _b : image;
++  }
++  /**
++   * Draws a circular snowflake to the canvas.
++   *
++   * This method should only be called if our config does not have images.
++   *
++   * This method assumes that a path has already been started on the canvas.
++   * `ctx.beginPath()` should be called before calling this method.
++   *
++   * After calling this method, the fillStyle should be set to the snowflake's
++   * color and `ctx.fill()` should be called to fill the snowflake.
++   *
++   * Calling `ctx.fill()` after multiple snowflakes have had `drawCircle` called
++   * will render all of the snowflakes since the last call to `ctx.beginPath()`.
++   *
++   * @param ctx The canvas context to draw to
++   */
++  drawCircle(ctx) {
++    ctx.moveTo(this.params.x, this.params.y);
++    ctx.arc(this.params.x, this.params.y, this.params.radius, 0, twoPi);
++  }
++
++  drawPetal(ctx) {
++    const centerX = this.params.x; // 꽃잎 중심 X 좌표
++    const centerY = this.params.y; // 꽃잎 중심 Y 좌표
++    const petalWidth = this.params.radius; // 꽃잎의 너비
++    const petalHeight = this.params.radius * 2; // 꽃잎의 높이
++
++    ctx.beginPath();
++
++    // 꽃잎의 왼쪽 곡선 (arc 사용)
++    ctx.moveTo(centerX, centerY); // 시작점은 꽃잎의 중심
++    ctx.quadraticCurveTo(
++      centerX - petalWidth,
++      centerY - petalHeight,
++      centerX,
++      centerY - petalHeight
++    );
++
++    // 꽃잎의 오른쪽 곡선 (arc 사용)
++    ctx.quadraticCurveTo(
++      centerX + petalWidth,
++      centerY - petalHeight,
++      centerX,
++      centerY
++    );
++
++    ctx.closePath(); // 경로를 닫아서 꽃잎을 완성
++    ctx.fill(); // 꽃잎 색 채우기
++  }
++
++  /**
++   * Draws an image-based snowflake to the canvas.
++   *
++   * This method should only be called if our config has images.
++   *
++   * @param ctx The canvas context to draw to
++   */
++  drawImage(ctx) {
++    const { x, y, rotation, radius } = this.params;
++    const radian = (rotation * Math.PI) / 180;
++    const cos = Math.cos(radian);
++    const sin = Math.sin(radian);
++    // Translate to the location that we will be drawing the snowflake, including any rotation that needs to be applied
++    // The arguments for setTransform are: a, b, c, d, e, f
++    // a (scaleX), b (skewY), c (skewX), d (scaleY), e (translateX), f (translateY)
++    ctx.setTransform(cos, sin, -sin, cos, x, y);
++    // Draw the image with the center of the image at the center of the current location
++    const image = this.getImageOffscreenCanvas(this.image, radius);
++    ctx.drawImage(image, -(radius / 2), -(radius / 2), radius, radius);
++  }
+ }
+ Snowflake.offscreenCanvases = new WeakMap();
+ export default Snowflake;
+diff --git a/node_modules/react-snowfall/src/Snowfall.tsx b/node_modules/react-snowfall/src/Snowfall.tsx
+index a32bd45..89deef6 100644
+--- a/node_modules/react-snowfall/src/Snowfall.tsx
++++ b/node_modules/react-snowfall/src/Snowfall.tsx
+@@ -1,13 +1,13 @@
+-import React, { useEffect, useRef } from 'react'
+-import { SnowfallCanvas, SnowfallCanvasConfig } from './SnowfallCanvas.js'
+-import { defaultConfig } from './Snowflake.js'
+-import { useComponentSize, useDeepMemo, useSnowfallStyle } from './hooks.js'
++import React, { useEffect, useRef } from 'react';
++import { SnowfallCanvas, SnowfallCanvasConfig } from './SnowfallCanvas.js';
++import { defaultConfig } from './Snowflake.js';
++import { useComponentSize, useDeepMemo, useSnowfallStyle } from './hooks.js';
+ 
+ export interface SnowfallProps extends Partial<SnowfallCanvasConfig> {
+   /**
+    * Any style properties that will be passed to the canvas element.
+    */
+-  style?: React.CSSProperties
++  style?: React.CSSProperties;
+ }
+ 
+ export const Snowfall = ({
+@@ -21,10 +21,10 @@ export const Snowfall = ({
+   images,
+   style,
+ }: SnowfallProps = {}): JSX.Element => {
+-  const mergedStyle = useSnowfallStyle(style)
++  const mergedStyle = useSnowfallStyle(style);
+ 
+-  const canvasRef = useRef<HTMLCanvasElement>(null)
+-  const canvasSize = useComponentSize(canvasRef)
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const canvasSize = useComponentSize(canvasRef);
+ 
+   const config = useDeepMemo<SnowfallCanvasConfig>({
+     color,
+@@ -35,29 +35,32 @@ export const Snowfall = ({
+     rotationSpeed,
+     images,
+     snowflakeCount,
+-  })
++  });
+ 
+   // A reference to the config used for creating the initial instance
+-  const configRef = useRef(config)
++  const configRef = useRef(config);
+ 
+-  const snowfallCanvasRef = useRef<SnowfallCanvas>()
++  const snowfallCanvasRef = useRef<SnowfallCanvas>();
+ 
+   useEffect(() => {
+     if (!snowfallCanvasRef.current && canvasRef.current) {
+-      snowfallCanvasRef.current = new SnowfallCanvas(canvasRef.current, configRef.current)
++      snowfallCanvasRef.current = new SnowfallCanvas(
++        canvasRef.current,
++        configRef.current
++      );
+     }
+ 
+     return () => {
+-      snowfallCanvasRef.current?.pause()
+-      snowfallCanvasRef.current = undefined
+-    }
+-  }, [])
++      snowfallCanvasRef.current?.pause();
++      snowfallCanvasRef.current = undefined;
++    };
++  }, []);
+ 
+   useEffect(() => {
+     if (snowfallCanvasRef.current) {
+-      snowfallCanvasRef.current.updateConfig(config)
++      snowfallCanvasRef.current.updateConfig(config);
+     }
+-  }, [config])
++  }, [config]);
+ 
+   return (
+     <canvas
+@@ -67,7 +70,7 @@ export const Snowfall = ({
+       style={mergedStyle}
+       data-testid="SnowfallCanvas"
+     />
+-  )
+-}
++  );
++};
+ 
+-export default Snowfall
++export default Snowfall;
+diff --git a/node_modules/react-snowfall/src/SnowfallCanvas.ts b/node_modules/react-snowfall/src/SnowfallCanvas.ts
+index dc4a9fe..2b8a17e 100644
+--- a/node_modules/react-snowfall/src/SnowfallCanvas.ts
++++ b/node_modules/react-snowfall/src/SnowfallCanvas.ts
+@@ -1,5 +1,5 @@
+-import Snowflake, { SnowflakeConfig, defaultConfig } from './Snowflake.js'
+-import { targetFrameTime } from './config.js'
++import Snowflake, { SnowflakeConfig, defaultConfig } from './Snowflake.js';
++import { targetFrameTime } from './config.js';
+ 
+ export interface SnowfallCanvasConfig extends SnowflakeConfig {
+   /**
+@@ -7,35 +7,42 @@ export interface SnowfallCanvasConfig extends SnowflakeConfig {
+    *
+    * The default value is 150.
+    */
+-  snowflakeCount: number
++  snowflakeCount: number;
+ }
+ 
+ export class SnowfallCanvas {
+-  private lastUpdate = Date.now()
+-  private snowflakes: Snowflake[] = []
+-  private config: SnowfallCanvasConfig
++  private lastUpdate = Date.now();
++  private snowflakes: Snowflake[] = [];
++  private config: SnowfallCanvasConfig;
+ 
+-  #ctx: CanvasRenderingContext2D | null
++  #ctx: CanvasRenderingContext2D | null;
+   get ctx() {
+-    return this.#ctx
++    return this.#ctx;
+   }
+ 
+-  #canvas: HTMLCanvasElement
++  #canvas: HTMLCanvasElement;
+   get canvas() {
+-    return this.#canvas
++    return this.#canvas;
+   }
+   set canvas(canvas: HTMLCanvasElement) {
+-    this.#canvas = canvas
+-    this.#ctx = canvas.getContext('2d')
++    this.#canvas = canvas;
++    this.#ctx = canvas.getContext('2d');
+   }
+ 
+-  constructor(canvas: HTMLCanvasElement, config: Partial<SnowfallCanvasConfig>) {
+-    this.#canvas = canvas
+-    this.#ctx = canvas.getContext('2d')
+-    this.config = { snowflakeCount: 150, ...defaultConfig, ...config }
+-    this.snowflakes = []
+-    this.snowflakes = Snowflake.createSnowflakes(canvas, config.snowflakeCount || 150, config)
+-    this.play()
++  constructor(
++    canvas: HTMLCanvasElement,
++    config: Partial<SnowfallCanvasConfig>
++  ) {
++    this.#canvas = canvas;
++    this.#ctx = canvas.getContext('2d');
++    this.config = { snowflakeCount: 150, ...defaultConfig, ...config };
++    this.snowflakes = [];
++    this.snowflakes = Snowflake.createSnowflakes(
++      canvas,
++      config.snowflakeCount || 150,
++      config
++    );
++    this.play();
+   }
+ 
+   /**
+@@ -44,20 +51,23 @@ export class SnowfallCanvas {
+    * to retain the position of as many existing snowflakes as possible.
+    */
+   updateConfig(config: Partial<SnowfallCanvasConfig>) {
+-    this.config = { ...this.config, ...config }
++    this.config = { ...this.config, ...config };
+ 
+-    const sizeDifference = this.config.snowflakeCount - this.snowflakes.length
++    const sizeDifference = this.config.snowflakeCount - this.snowflakes.length;
+ 
+     if (sizeDifference > 0) {
+-      this.snowflakes = [...this.snowflakes, ...Snowflake.createSnowflakes(this.canvas, sizeDifference, config)]
++      this.snowflakes = [
++        ...this.snowflakes,
++        ...Snowflake.createSnowflakes(this.canvas, sizeDifference, config),
++      ];
+     }
+ 
+     if (sizeDifference < 0) {
+-      this.snowflakes = this.snowflakes.slice(0, this.config.snowflakeCount)
++      this.snowflakes = this.snowflakes.slice(0, this.config.snowflakeCount);
+     }
+ 
+     for (const snowflake of this.snowflakes) {
+-      snowflake.updateConfig(this.config)
++      snowflake.updateConfig(this.config);
+     }
+   }
+ 
+@@ -66,39 +76,38 @@ export class SnowfallCanvas {
+    * clears the canvas and draws each snowflake.
+    */
+   private render(framesPassed = 1) {
+-    const { ctx, canvas, snowflakes } = this
++    const { ctx, canvas, snowflakes } = this;
+ 
+-    if (!ctx || !canvas) return
++    if (!ctx || !canvas) return;
+ 
+-    const { offsetWidth, offsetHeight } = canvas
++    const { offsetWidth, offsetHeight } = canvas;
+ 
+     // Update the position of each snowflake
+     for (const snowflake of snowflakes) {
+-      snowflake.update(offsetWidth, offsetHeight, framesPassed)
++      snowflake.update(offsetWidth, offsetHeight, framesPassed);
+     }
+ 
+     // Render the snowflakes
+-    ctx.setTransform(1, 0, 0, 1, 0, 0)
+-    ctx.clearRect(0, 0, offsetWidth, offsetHeight)
++    ctx.setTransform(1, 0, 0, 1, 0, 0);
++    ctx.clearRect(0, 0, offsetWidth, offsetHeight);
+ 
+     // If using images, draw each image individually
+     if (this.config.images && this.config.images.length > 0) {
+       for (const snowflake of snowflakes) {
+-        snowflake.drawImage(ctx)
++        snowflake.drawImage(ctx);
+       }
+-      return
++      return;
+     }
+ 
+     // Not using images, draw circles in a single path
+-    ctx.beginPath()
++    ctx.beginPath();
++
+     for (const snowflake of snowflakes) {
+-      snowflake.drawCircle(ctx)
++      snowflake.drawPetal(ctx);
+     }
+-    ctx.fillStyle = this.config.color!
+-    ctx.fill()
+   }
+ 
+-  private animationFrame: number | undefined
++  private animationFrame: number | undefined;
+ 
+   /**
+    * The animation loop, will calculate the time since the last render and update
+@@ -106,30 +115,30 @@ export class SnowfallCanvas {
+    */
+   private loop() {
+     // Update based on time passed so that a slow frame rate won't slow down the snowflake
+-    const now = Date.now()
+-    const msPassed = Date.now() - this.lastUpdate
+-    this.lastUpdate = now
++    const now = Date.now();
++    const msPassed = Date.now() - this.lastUpdate;
++    this.lastUpdate = now;
+ 
+     // Frames that would have passed if running at 60 fps
+-    const framesPassed = msPassed / targetFrameTime
++    const framesPassed = msPassed / targetFrameTime;
+ 
+-    this.render(framesPassed)
++    this.render(framesPassed);
+ 
+-    this.animationFrame = requestAnimationFrame(() => this.loop())
++    this.animationFrame = requestAnimationFrame(() => this.loop());
+   }
+ 
+   /** Start the animation playing. */
+   play() {
+-    this.loop()
++    this.loop();
+   }
+ 
+   /** Pause the animation. */
+   pause() {
+     if (this.animationFrame) {
+-      cancelAnimationFrame(this.animationFrame)
+-      this.animationFrame = undefined
++      cancelAnimationFrame(this.animationFrame);
++      this.animationFrame = undefined;
+     }
+   }
+ }
+ 
+-export default SnowfallCanvas
++export default SnowfallCanvas;
+diff --git a/node_modules/react-snowfall/src/Snowflake.ts b/node_modules/react-snowfall/src/Snowflake.ts
+index f088e59..ed3ede1 100644
+--- a/node_modules/react-snowfall/src/Snowflake.ts
++++ b/node_modules/react-snowfall/src/Snowflake.ts
+@@ -1,16 +1,16 @@
+-import isEqual from 'react-fast-compare'
+-import { lerp, random, randomElement, twoPi } from './utils.js'
++import isEqual from 'react-fast-compare';
++import { lerp, random, randomElement, twoPi } from './utils.js';
+ 
+ export interface SnowflakeProps {
+   /** The color of the snowflake, can be any valid CSS color. */
+-  color: string
++  color: string;
+   /**
+    * The minimum and maximum radius of the snowflake, will be
+    * randomly selected within this range.
+    *
+    * The default value is `[0.5, 3.0]`.
+    */
+-  radius: [number, number]
++  radius: [number, number];
+   /**
+    * The minimum and maximum speed of the snowflake.
+    *
+@@ -21,7 +21,7 @@ export interface SnowflakeProps {
+    *
+    * The default value is `[1.0, 3.0]`.
+    */
+-  speed: [number, number]
++  speed: [number, number];
+   /**
+    * The minimum and maximum wind of the snowflake.
+    *
+@@ -32,19 +32,19 @@ export interface SnowflakeProps {
+    *
+    * The default value is `[-0.5, 2.0]`.
+    */
+-  wind: [number, number]
++  wind: [number, number];
+   /**
+    * The frequency in frames that the wind and speed values
+    * will update.
+    *
+    * The default value is 200.
+    */
+-  changeFrequency: number
++  changeFrequency: number;
+   /**
+    * An array of images that will be rendered as the snowflakes instead
+    * of the default circle shapes.
+    */
+-  images?: CanvasImageSource[]
++  images?: CanvasImageSource[];
+   /**
+    * The minimum and maximum rotation speed of the snowflake (in degrees of
+    * rotation per frame).
+@@ -56,10 +56,10 @@ export interface SnowflakeProps {
+    *
+    * The default value is `[-1.0, 1.0]`.
+    */
+-  rotationSpeed: [number, number]
++  rotationSpeed: [number, number];
+ }
+ 
+-export type SnowflakeConfig = Partial<SnowflakeProps>
++export type SnowflakeConfig = Partial<SnowflakeProps>;
+ 
+ export const defaultConfig: SnowflakeProps = {
+   color: '#dee4fd',
+@@ -68,19 +68,19 @@ export const defaultConfig: SnowflakeProps = {
+   wind: [-0.5, 2.0],
+   changeFrequency: 200,
+   rotationSpeed: [-1.0, 1.0],
+-}
++};
+ 
+ interface SnowflakeParams {
+-  x: number
+-  y: number
+-  radius: number
+-  rotation: number
+-  rotationSpeed: number
+-  speed: number
+-  wind: number
+-  nextSpeed: number
+-  nextWind: number
+-  nextRotationSpeed: number
++  x: number;
++  y: number;
++  radius: number;
++  rotation: number;
++  rotationSpeed: number;
++  speed: number;
++  wind: number;
++  nextSpeed: number;
++  nextWind: number;
++  nextRotationSpeed: number;
+ }
+ 
+ /**
+@@ -88,7 +88,10 @@ interface SnowflakeParams {
+  * and draw itself to the canvas every call to `draw`.
+  */
+ class Snowflake {
+-  private static offscreenCanvases = new WeakMap<CanvasImageSource, Record<number, HTMLCanvasElement>>()
++  private static offscreenCanvases = new WeakMap<
++    CanvasImageSource,
++    Record<number, HTMLCanvasElement>
++  >();
+ 
+   /**
+    * A utility function to create a collection of snowflakes
+@@ -96,29 +99,33 @@ class Snowflake {
+    * @param amount The number of snowflakes
+    * @param config The configuration for each snowflake
+    */
+-  static createSnowflakes(canvas: HTMLCanvasElement | null, amount: number, config: SnowflakeConfig): Snowflake[] {
+-    if (!canvas) return []
++  static createSnowflakes(
++    canvas: HTMLCanvasElement | null,
++    amount: number,
++    config: SnowflakeConfig
++  ): Snowflake[] {
++    if (!canvas) return [];
+ 
+-    const snowflakes: Snowflake[] = []
++    const snowflakes: Snowflake[] = [];
+ 
+     for (let i = 0; i < amount; i++) {
+-      snowflakes.push(new Snowflake(canvas, config))
++      snowflakes.push(new Snowflake(canvas, config));
+     }
+ 
+-    return snowflakes
++    return snowflakes;
+   }
+ 
+-  private config!: SnowflakeProps
+-  private params: SnowflakeParams
+-  private framesSinceLastUpdate: number
+-  private image?: CanvasImageSource
++  private config!: SnowflakeProps;
++  private params: SnowflakeParams;
++  private framesSinceLastUpdate: number;
++  private image?: CanvasImageSource;
+ 
+   public constructor(canvas: HTMLCanvasElement, config: SnowflakeConfig = {}) {
+     // Set custom config
+-    this.updateConfig(config)
++    this.updateConfig(config);
+ 
+     // Setting initial parameters
+-    const { radius, wind, speed, rotationSpeed } = this.config
++    const { radius, wind, speed, rotationSpeed } = this.config;
+ 
+     this.params = {
+       x: random(0, canvas.offsetWidth),
+@@ -131,85 +138,106 @@ class Snowflake {
+       nextSpeed: random(...wind),
+       nextWind: random(...speed),
+       nextRotationSpeed: random(...rotationSpeed),
+-    }
++    };
+ 
+-    this.framesSinceLastUpdate = 0
++    this.framesSinceLastUpdate = 0;
+   }
+ 
+   private selectImage() {
+     if (this.config.images && this.config.images.length > 0) {
+-      this.image = randomElement(this.config.images)
++      this.image = randomElement(this.config.images);
+     } else {
+-      this.image = undefined
++      this.image = undefined;
+     }
+   }
+ 
+   public updateConfig(config: SnowflakeConfig): void {
+-    const previousConfig = this.config
+-    this.config = { ...defaultConfig, ...config }
+-    this.config.changeFrequency = random(this.config.changeFrequency, this.config.changeFrequency * 1.5)
++    const previousConfig = this.config;
++    this.config = { ...defaultConfig, ...config };
++    this.config.changeFrequency = random(
++      this.config.changeFrequency,
++      this.config.changeFrequency * 1.5
++    );
+ 
+     // Update the radius if the config has changed, it won't gradually update on it's own
+     if (this.params && !isEqual(this.config.radius, previousConfig?.radius)) {
+-      this.params.radius = random(...this.config.radius)
++      this.params.radius = random(...this.config.radius);
+     }
+ 
+     if (!isEqual(this.config.images, previousConfig?.images)) {
+-      this.selectImage()
++      this.selectImage();
+     }
+   }
+ 
+   private updateTargetParams(): void {
+-    this.params.nextSpeed = random(...this.config.speed)
+-    this.params.nextWind = random(...this.config.wind)
++    this.params.nextSpeed = random(...this.config.speed);
++    this.params.nextWind = random(...this.config.wind);
+     if (this.image) {
+-      this.params.nextRotationSpeed = random(...this.config.rotationSpeed)
++      this.params.nextRotationSpeed = random(...this.config.rotationSpeed);
+     }
+   }
+ 
+-  public update(offsetWidth: number, offsetHeight: number, framesPassed = 1): void {
+-    const { x, y, rotation, rotationSpeed, nextRotationSpeed, wind, speed, nextWind, nextSpeed, radius } = this.params
++  public update(
++    offsetWidth: number,
++    offsetHeight: number,
++    framesPassed = 1
++  ): void {
++    const {
++      x,
++      y,
++      rotation,
++      rotationSpeed,
++      nextRotationSpeed,
++      wind,
++      speed,
++      nextWind,
++      nextSpeed,
++      radius,
++    } = this.params;
+ 
+     // Update current location, wrapping around if going off the canvas
+-    this.params.x = (x + wind * framesPassed) % (offsetWidth + radius * 2)
+-    if (this.params.x > offsetWidth + radius) this.params.x = -radius
+-    this.params.y = (y + speed * framesPassed) % (offsetHeight + radius * 2)
+-    if (this.params.y > offsetHeight + radius) this.params.y = -radius
++    this.params.x = (x + wind * framesPassed) % (offsetWidth + radius * 2);
++    if (this.params.x > offsetWidth + radius) this.params.x = -radius;
++    this.params.y = (y + speed * framesPassed) % (offsetHeight + radius * 2);
++    if (this.params.y > offsetHeight + radius) this.params.y = -radius;
+ 
+     // Apply rotation
+     if (this.image) {
+-      this.params.rotation = (rotation + rotationSpeed) % 360
++      this.params.rotation = (rotation + rotationSpeed) % 360;
+     }
+ 
+     // Update the wind, speed and rotation towards the desired values
+-    this.params.speed = lerp(speed, nextSpeed, 0.01)
+-    this.params.wind = lerp(wind, nextWind, 0.01)
+-    this.params.rotationSpeed = lerp(rotationSpeed, nextRotationSpeed, 0.01)
++    this.params.speed = lerp(speed, nextSpeed, 0.01);
++    this.params.wind = lerp(wind, nextWind, 0.01);
++    this.params.rotationSpeed = lerp(rotationSpeed, nextRotationSpeed, 0.01);
+ 
+     if (this.framesSinceLastUpdate++ > this.config.changeFrequency) {
+-      this.updateTargetParams()
+-      this.framesSinceLastUpdate = 0
++      this.updateTargetParams();
++      this.framesSinceLastUpdate = 0;
+     }
+   }
+ 
+-  private getImageOffscreenCanvas(image: CanvasImageSource, size: number): CanvasImageSource {
+-    if (image instanceof HTMLImageElement && image.loading) return image
+-    let sizes = Snowflake.offscreenCanvases.get(image)
++  private getImageOffscreenCanvas(
++    image: CanvasImageSource,
++    size: number
++  ): CanvasImageSource {
++    if (image instanceof HTMLImageElement && image.loading) return image;
++    let sizes = Snowflake.offscreenCanvases.get(image);
+ 
+     if (!sizes) {
+-      sizes = {}
+-      Snowflake.offscreenCanvases.set(image, sizes)
++      sizes = {};
++      Snowflake.offscreenCanvases.set(image, sizes);
+     }
+ 
+     if (!(size in sizes)) {
+-      const canvas = document.createElement('canvas')
+-      canvas.width = size
+-      canvas.height = size
+-      canvas.getContext('2d')?.drawImage(image, 0, 0, size, size)
+-      sizes[size] = canvas
++      const canvas = document.createElement('canvas');
++      canvas.width = size;
++      canvas.height = size;
++      canvas.getContext('2d')?.drawImage(image, 0, 0, size, size);
++      sizes[size] = canvas;
+     }
+ 
+-    return sizes[size] ?? image
++    return sizes[size] ?? image;
+   }
+ 
+   /**
+@@ -229,8 +257,8 @@ class Snowflake {
+    * @param ctx The canvas context to draw to
+    */
+   public drawCircle(ctx: CanvasRenderingContext2D): void {
+-    ctx.moveTo(this.params.x, this.params.y)
+-    ctx.arc(this.params.x, this.params.y, this.params.radius, 0, twoPi)
++    ctx.moveTo(this.params.x, this.params.y);
++    ctx.arc(this.params.x, this.params.y, this.params.radius, 0, twoPi);
+   }
+ 
+   /**
+@@ -241,21 +269,51 @@ class Snowflake {
+    * @param ctx The canvas context to draw to
+    */
+   public drawImage(ctx: CanvasRenderingContext2D): void {
+-    const { x, y, rotation, radius } = this.params
++    const { x, y, rotation, radius } = this.params;
+ 
+-    const radian = (rotation * Math.PI) / 180
+-    const cos = Math.cos(radian)
+-    const sin = Math.sin(radian)
++    const radian = (rotation * Math.PI) / 180;
++    const cos = Math.cos(radian);
++    const sin = Math.sin(radian);
+ 
+     // Translate to the location that we will be drawing the snowflake, including any rotation that needs to be applied
+     // The arguments for setTransform are: a, b, c, d, e, f
+     // a (scaleX), b (skewY), c (skewX), d (scaleY), e (translateX), f (translateY)
+-    ctx.setTransform(cos, sin, -sin, cos, x, y)
++    ctx.setTransform(cos, sin, -sin, cos, x, y);
+ 
+     // Draw the image with the center of the image at the center of the current location
+-    const image = this.getImageOffscreenCanvas(this.image!, radius)
+-    ctx.drawImage(image, -(radius / 2), -(radius / 2), radius, radius)
++    const image = this.getImageOffscreenCanvas(this.image!, radius);
++    ctx.drawImage(image, -(radius / 2), -(radius / 2), radius, radius);
++  }
++
++  public drawPetal(ctx: CanvasRenderingContext2D): void {
++    const centerX = this.params.x; // 꽃잎 중심 X 좌표
++    const centerY = this.params.y; // 꽃잎 중심 Y 좌표
++    const petalWidth = 30; // 꽃잎의 너비
++    const petalHeight = 20; // 꽃잎의 높이
++
++    ctx.beginPath();
++
++    // 꽃잎의 왼쪽 곡선 (arc 사용)
++    ctx.moveTo(centerX, centerY); // 시작점은 꽃잎의 중심
++    ctx.quadraticCurveTo(
++      centerX - petalWidth,
++      centerY - petalHeight,
++      centerX,
++      centerY - petalHeight
++    );
++
++    // 꽃잎의 오른쪽 곡선 (arc 사용)
++    ctx.quadraticCurveTo(
++      centerX + petalWidth,
++      centerY - petalHeight,
++      centerX,
++      centerY
++    );
++
++    ctx.closePath(); // 경로를 닫아서 꽃잎을 완성
++    ctx.fillStyle = 'pink'; // 꽃잎 색상
++    ctx.fill(); // 꽃잎 색 채우기
+   }
+ }
+ 
+-export default Snowflake
++export default Snowflake;
+diff --git a/node_modules/react-snowfall/src/config.ts b/node_modules/react-snowfall/src/config.ts
+index 1830f78..24fd791 100644
+--- a/node_modules/react-snowfall/src/config.ts
++++ b/node_modules/react-snowfall/src/config.ts
+@@ -6,7 +6,7 @@ export const snowfallBaseStyle: React.CSSProperties = {
+   left: 0,
+   width: '100%',
+   height: '100%',
+-}
++};
+ 
+ // Target of 60 frames per second
+-export const targetFrameTime = 1000 / 60
++export const targetFrameTime = 1000 / 60;

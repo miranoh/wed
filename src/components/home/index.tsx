@@ -9,15 +9,23 @@ import React, {
   useState,
 } from "react";
 import Slider from "react-slick";
+import Snowfall from 'react-snowfall';
 import "slick-carousel/slick/slick.css";
 import styled, { css } from "styled-components";
 import useSWR from "swr";
 
 import Modal from "@/components/common/Modal";
+import Wrapper from '@/components/common/Wrapper';
 import timeDiffFormat from "@/common/utils/timeDiffFormat";
 import { useSessionStorage } from "@/common/hooks/useStorage";
 import coverPic from "@/public/photos/cover.jpg";
 import mapPic from "@/public/photos/map.jpg";
+import pinIcon from '@/public/location-pin.png';
+import { INFORMATION } from '@/components/common/value';
+import AttendModal from '@/components/common/AttendModal';
+// import { Gallery, Item } from 'react-photoswipe-gallery';
+import 'photoswipe/style.css';
+// import { Container as MapDiv, NaverMap, Marker, useNavermaps} from 'react-naver-maps';
 import { GetTalkListResponse, Party, Talk } from "@/talk/types";
 import {
   BoxShadowStyle,
@@ -30,6 +38,8 @@ import {
 import WriteTalk from "./talk/WriteTalk";
 import EditTalk from "./talk/EditTalk";
 import QuickPinchZoom, { make3dTransformValue } from "react-quick-pinch-zoom";
+
+// const navermaps = useNavermaps()
 
 const Header = styled.h1`
   display: inline-block;
@@ -56,7 +66,7 @@ const CoverPicWrap = styled.div`
   line-height: 0;
 `;
 
-const imageSize = 14;
+const imageSize = 16;
 
 const LiveButton = styled.button`
   padding: 8px 16px;
@@ -129,10 +139,24 @@ const CallButton = ({ icon, bgColor, label }: CallButtonProps) => (
   </>
 );
 
+const TabButton = styled.div`
+  border: 1px solid gray;
+  width: 230px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  cursor: pointer;
+  color: white;
+  border-radius: 6px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+`;
+
 const PhotoGrid = styled.ul`
   display: flex;
   flex-wrap: wrap;
-  padding: 0 10px;
+  padding: 0 5px;
 
   li {
     height: 200px;
@@ -145,6 +169,21 @@ const PhotoGrid = styled.ul`
     min-width: 100%;
     object-fit: cover;
     vertical-align: bottom;
+  }
+`;
+
+const NoticeWrap = styled.div`
+  width: 100%;
+  display: flex;
+  text-align: left;
+  line-height: 2;
+  flex-direction: column;
+  border-bottom: 1px solid lightgray;
+  padding: 35px 0;
+  overflow: visible;
+
+  @media only screen and (max-width: 400px) {
+    padding: 33px 0;
   }
 `;
 
@@ -182,6 +221,13 @@ const SliderWrap = styled.div<{ isZoomed: boolean }>`
     }
   }
 `;
+
+const smallItemStyles: React.CSSProperties = {
+  cursor: 'pointer',
+  objectFit: 'contain',
+  width: '100px',
+  height: '150px',
+};
 
 type PinchPhotoProps = { src: string; onZoom: (isZoomed: boolean) => void };
 const PinchPhoto = ({ src, onZoom }: PinchPhotoProps) => {
@@ -253,6 +299,58 @@ const GiveWrap = styled.div`
   text-align: left;
   line-height: 2;
 `;
+
+const [openGroomAccount, setOpenGroomAccount] = useState<boolean>(false);
+const [openBrideAccount, setOpenBrideAccount] = useState<boolean>(false);
+
+const AccountWrapper = styled.div`
+  margin: 0 auto;
+  width: max(75%, 290px);
+  transition: height 0.6s;
+  transition-timing-function: cubic-bezier(0.15, 0.82, 0.165, 1);
+  overflow: hidden;
+`;
+
+const AccountOwner = styled.div`
+  font-family: Pretendard;
+  width: 100%;
+  padding-top: 20px;
+`;
+
+const AccountItem = styled.div`
+  font-family: Pretendard;
+  margin-top: 8px;
+  height: 40px;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  padding: 12px;
+  align-items: center;
+  position: relative;
+
+  & > button {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-family: Pretendard;
+    background-color: white;
+    border: 1px solid #c6c6c6;
+    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.2);
+    padding: 6px 8px;
+    font-size: 15px;
+    color: #555555;
+    cursor: pointer;
+  }
+`;
+
+const onClickCopy = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    alert(`${text}\n계좌번호가 복사되었습니다.`);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const CopyTextButton = styled.button`
   padding: 0;
@@ -540,24 +638,30 @@ const Home = () => {
   return (
     <Main>
       <Header>
-        오현규
-        <hr />
-        오미란
+        Denny & Miran
       </Header>
       <CoverPicWrap>
         <Image src={coverPic} priority={true} placeholder="blur" alt="" />
       </CoverPicWrap>
       <p>
-        2025.9.21 일요일 오후 5시 30분
+        2025.9.21 SUN 5:30PM
         <br />
-        보넬리가든
+        Bonelli Garden
       </p>
 
 
       <SectionHr />
 
-      <SectionHeader>아름다운 날 <br/>저희 결혼합니다.</SectionHeader>
+      <SectionHeader style={{ color: "#F08080" }}>Invitation</SectionHeader>
       <GreetingP>
+        <Snowfall
+            color="#f5b87a" //gold
+            snowflakeCount={30}
+            radius={[1, 5]}
+            // images={['🌻']}
+            speed={[0.2, 1]}
+            style={{ opacity: 0.35 }}
+          />
         청명한 가을날
         <br />
         소중한 분들의 축복 속에서
@@ -566,31 +670,15 @@ const Home = () => {
         <br />
         
         <br />
-        저희의 시작하는 모습을
+        설레는 이 시작의 순간에
         <br />
-        여러분과 함께하고 싶습니다.
+        함께 자리를 빛내주시면 감사하겠습니다.
       </GreetingP>
       <GreetingP>
-        (故)오종호 · 지승희의 장남 현규
+        (故)오종호 · 지승희의 아들 현규
         <br />
-        오혜근 · 홍영예의 차녀 미란
+        오혜근 · 홍영예의 딸 미란
       </GreetingP>
-      <CallWrap>
-        <a href="tel:01049148815">
-          <CallButton
-            icon={<EmojiLookRight />}
-            bgColor="#abdaab"
-            label="신랑측에 연락하기"
-          />
-        </a>
-        <a href="tel:01085225457">
-          <CallButton
-            icon={<EmojiLookLeft />}
-            bgColor="#c2e0a3"
-            label="신부측에 연락하기"
-          />
-        </a>
-      </CallWrap>
       <SectionHr />
       <PhotoGrid>
         {Array.from(Array(imageSize), (_, i) => i).map((i) => (
@@ -615,79 +703,161 @@ const Home = () => {
         </Modal>
       )}
       <SectionHr />
-      <SectionHeader>🧭 오시는 길</SectionHeader>
-      <Image src={mapPic} width="395px" height="250px" alt="" />
+      <SectionHeader style={{ color: "#F08080" }}>🧭 Location</SectionHeader>
       <p>
-        서울 서초구 샘마루길 11
         <br />
-        보넬리가든
+        Bonelli Garden
         <br />
-        📞 02-451-6166
+        11 Saemmaru-gil, Naegok-dong
+        <br />
+        Seocho District, Seoul
+        <br />
+        📞 +82-2-451-6166
       </p>
-      <MapButton href="https://kko.kakao.com/Cx8mtB70M6">
-        <PinAlt color="#1199EE" /> 카카오맵
-      </MapButton>
-      <MapButton href="https://naver.me/GYCqKhaF">
-        <PinAlt color="#66BB66" /> 네이버지도
-      </MapButton>
-
 
       <p>
         <br/>
-        <b>셔틀버스</b>
+        <b style={{ color: "#F08080" }}>Shuttle Bus</b>
         <br />
-        신분당선 양재시민의숲역 4번 출구 앞 운행
+        Shinbundang Line, Yangjae Citizen's Forest Station Exit 4
         <br />
         <br />
-        <b style={{ color: "#F08080" }}>주차 안내</b>
+        <b style={{ color: "#F08080" }}>Parking</b>
         <br />
-        서울시 서초구 샘마루길 34-14
+        34-14 Saemmaru-gil, Seocho District, Seoul
         <br />
         서초과학화예비군훈련장 강동송파주차장
       </p>
 
       <SectionHr />
-      <SectionHeader>안내사항</SectionHeader>
+      <SectionHeader style={{ color: "#F08080" }}>🪧 Information</SectionHeader>
+      <NoticeWrap
+            style={{
+              margin: '40px 0 0 0',
+              border: '4px double lightgray',
+              alignItems: 'center',
+              padding: '30px 0 56px',
+            }}
+          >
+        <p>
+          4:00-5:30pm | Welcome drink & Photo booth 📷
+          <br />
+          5:30-6:00pm | Wedding ceremony
+          <br />
+          6:00-7:00pm | Dinner
+          <br />
+          7:00-8:30pm | Afterparty
+        </p>
+      </NoticeWrap>
       <p>
-        식사는 2부 예식과 함께 진행됩니다.
+        오랜만에 뵙는 분들, 먼 곳에서 오시는 분들
         <br />
-        식사 후 포토부스 & 방명록이
+        모두 짧게 인사드리기 아쉬워
         <br />
-        7시에 설지될 예정입니다.
+        본식 전후로 시간을 마련했습니다.
+        <br /><br />
+        예식 전 설치될 포토부스에서
         <br />
         마음껏 사진 찍으시고
         <br />
         방명록도 남겨주세요:)
         <br />
-        인원 수 x 2장씩 인쇄되오니
+        인원 수 x 2장씩 인쇄되니
         <br />
         한 장은 소장하실 수 있습니다. 😊
         <br />
-        (결혼식 이벤트? 간단한 식순?)
       </p>
 
       <SectionHr />
-      <SectionHeader>🌸 마음 전하실 곳</SectionHeader>
-      <GiveWrap>
-        <p>
-          <strong>👰 신부측</strong>
+      <SectionHeader style={{ color: "#F08080" }}>🌸 마음 전하실 곳</SectionHeader>
+
+        <TabButton
+          style={{ backgroundColor: '#F08080' }}
+          onClick={() => setOpenBrideAccount(!openBrideAccount)}
+        >
+          <strong>👰🤵 신랑 & 신부</strong>
+        </TabButton>
+        <AccountWrapper style={{ height: openBrideAccount ? '310px' : 0 }}>
+          {INFORMATION.bride.map((info) => (
+            <div key={info.name}>
+              <AccountOwner>
+                {info.bank} ({info.name})
+              </AccountOwner>
+              <AccountItem>
+                {info.accountNumber}
+                <button
+                  onClick={() => {
+                    onClickCopy(info.accountNumber);
+                  }}
+                >
+                  복사
+                </button>
+              </AccountItem>
+            </div>
+          ))}
+        </AccountWrapper>
           <br />
           오미란 국민은행 <CopyText text="9-10-5674-1102" />
           <br />
-          <CopyText text="예시4" />
-        </p>
-        <p>
+        <TabButton
+          style={{ backgroundColor: '#004D7A' }}
+          onClick={() => setOpenGroomAccount(!openGroomAccount)}
+        >
+          <strong>👰 신부측</strong>
+        </TabButton>
+        <AccountWrapper style={{ height: openBrideAccount ? '310px' : 0 }}>
+          {INFORMATION.bride.map((info) => (
+            <div key={info.name}>
+              <AccountOwner>
+                {info.bank} ({info.name})
+              </AccountOwner>
+              <AccountItem>
+                {info.accountNumber}
+                <button
+                  onClick={() => {
+                    onClickCopy(info.accountNumber);
+                  }}
+                >
+                  복사
+                </button>
+              </AccountItem>
+            </div>
+          ))}
+        </AccountWrapper>
+          <br />
+          홍영예 국민은행 <CopyText text="9-10-5674-1102" />
+          <br />
+          오혜근 <CopyText text="xxxxx-xxxxxxxx" />
+        <TabButton
+          style={{ backgroundColor: '#004D7A' }}
+          onClick={() => setOpenGroomAccount(!openGroomAccount)}
+        >
           <strong>🤵 신랑측</strong>
+        </TabButton>
+        <AccountWrapper style={{ height: openGroomAccount ? '310px' : 0 }}>
+          {INFORMATION.groom.map((info) => (
+            <div key={info.name}>
+              <AccountOwner>
+                {info.bank} ({info.name})
+              </AccountOwner>
+              <AccountItem>
+              <CopyText text={info.accountNumber} />
+              </AccountItem>
+            </div>
+          ))}
+        </AccountWrapper>
+        <br />
+          예시 <CopyText text="예시 계좌번호" />
           <br />
-          <CopyText text="예시1" />
-          <br />
-          <CopyText text="예시2" />
-
-        </p>
-      </GiveWrap>
+        <TabButton
+          style={{ backgroundColor: '#004D7A' }}
+          onClick={() => setOpenGroomAccount(!openGroomAccount)}
+        >
+      {/* <GiveWrap>
+      </GiveWrap> */}
 
       <SectionHr />
-      <SectionHeader>축하의 한마디</SectionHeader>
+      <SectionHeader style={{ color: "#F08080" }}>💬 축하의 한마디</SectionHeader>
       <WriteSectionSubHeader>
         <p>신랑측</p>
         <p>신부측</p>

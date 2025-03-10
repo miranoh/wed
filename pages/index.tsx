@@ -24,19 +24,19 @@ const HomePage = () => {
             
         <meta
           property="og:description"
-          content="오미란 ♡ 오현규 2025년 9월 21일 5시, 보넬리가든에서 결혼합니다."
+          content="2025.09.21 일 오후 5시 30분 보넬리가든"
         />
         <meta 
           name="twitter:description"
-          content="오미란 ♡ 오현규 2025년 9월 21일 5시, 보넬리가든에서 결혼합니다."
+          content="2025.09.21 일 오후 5시 30분 보넬리가든"
         />
         <meta
           property="og:image"
-          content="https://yunseok-paula-wedding.vercel.app/photos/cover_min.jpg"
+          content="https://raw.githubusercontent.com/miranoh/wed/refs/heads/main/public/photos/cover_min.jpg"
         />
         <meta
           name="twitter:image"
-          content="https://yunseok-paula-wedding.vercel.app/photos/cover_min.jpg"
+          content="https://raw.githubusercontent.com/miranoh/wed/refs/heads/main/public/photos/cover_min.jpg"
         />
       </Head>
       <Home />
