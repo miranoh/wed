@@ -680,6 +680,24 @@ const Home = () => {
         오혜근 · 홍영예의 딸 미란
       </GreetingP>
       <SectionHr />
+      <Button
+        style={{ backgroundColor: '#F08080', color: 'white' }}
+        onClick={() =>
+          setComponent(<AttendModal setComponent={setComponent} />)
+        }
+      >
+        <i
+          className="fa fa-calendar-check"
+          aria-hidden="true"
+          style={{
+            marginRight: '12px',
+            fontSize: '16px',
+            color: 'white',
+          }}
+        ></i>
+        참석여부 전달하기
+      </Button>
+      <SectionHr />
       <PhotoGrid>
         {Array.from(Array(imageSize), (_, i) => i).map((i) => (
           <li key={i}>
@@ -726,7 +744,6 @@ const Home = () => {
         <br />
         34-14 Saemmaru-gil, Seocho District, Seoul
         <br />
-        서초과학화예비군훈련장 강동송파주차장
       </p>
 
       <SectionHr />
@@ -749,118 +766,24 @@ const Home = () => {
           7:00-8:30pm | Afterparty
         </p>
       </NoticeWrap>
-      <p>
-        오랜만에 뵙는 분들, 먼 곳에서 오시는 분들
-        <br />
-        모두 짧게 인사드리기 아쉬워
-        <br />
-        본식 전후로 시간을 마련했습니다.
-        <br /><br />
-        예식 전 설치될 포토부스에서
-        <br />
-        마음껏 사진 찍으시고
-        <br />
-        방명록도 남겨주세요:)
-        <br />
-        인원 수 x 2장씩 인쇄되니
-        <br />
-        한 장은 소장하실 수 있습니다. 😊
-        <br />
-      </p>
 
       <SectionHr />
-      <SectionHeader style={{ color: "#F08080" }}>🌸 마음 전하실 곳</SectionHeader>
-
-        <TabButton
-          style={{ backgroundColor: '#F08080' }}
-          onClick={() => setOpenBrideAccount(!openBrideAccount)}
-        >
-          <strong>👰🤵 신랑 & 신부</strong>
-        </TabButton>
-        <AccountWrapper style={{ height: openBrideAccount ? '310px' : 0 }}>
-          {INFORMATION.bride.map((info) => (
-            <div key={info.name}>
-              <AccountOwner>
-                {info.bank} ({info.name})
-              </AccountOwner>
-              <AccountItem>
-                {info.accountNumber}
-                <button
-                  onClick={() => {
-                    onClickCopy(info.accountNumber);
-                  }}
-                >
-                  복사
-                </button>
-              </AccountItem>
-            </div>
-          ))}
-        </AccountWrapper>
+      <SectionHeader style={{ color: "#F08080" }}>🌸 Registry</SectionHeader>
+      <GiveWrap>
+        <p>
+          <strong>👰🤵 Bride & Groom</strong>
           <br />
-          오미란 국민은행 <CopyText text="9-10-5674-1102" />
+          Honeymoon fund: Venmo <CopyText text="@miranoh" />
           <br />
-        <TabButton
-          style={{ backgroundColor: '#004D7A' }}
-          onClick={() => setOpenGroomAccount(!openGroomAccount)}
-        >
-          <strong>👰 신부측</strong>
-        </TabButton>
-        <AccountWrapper style={{ height: openBrideAccount ? '310px' : 0 }}>
-          {INFORMATION.bride.map((info) => (
-            <div key={info.name}>
-              <AccountOwner>
-                {info.bank} ({info.name})
-              </AccountOwner>
-              <AccountItem>
-                {info.accountNumber}
-                <button
-                  onClick={() => {
-                    onClickCopy(info.accountNumber);
-                  }}
-                >
-                  복사
-                </button>
-              </AccountItem>
-            </div>
-          ))}
-        </AccountWrapper>
-          <br />
-          홍영예 국민은행 <CopyText text="9-10-5674-1102" />
-          <br />
-          오혜근 <CopyText text="xxxxx-xxxxxxxx" />
-        <TabButton
-          style={{ backgroundColor: '#004D7A' }}
-          onClick={() => setOpenGroomAccount(!openGroomAccount)}
-        >
-          <strong>🤵 신랑측</strong>
-        </TabButton>
-        <AccountWrapper style={{ height: openGroomAccount ? '310px' : 0 }}>
-          {INFORMATION.groom.map((info) => (
-            <div key={info.name}>
-              <AccountOwner>
-                {info.bank} ({info.name})
-              </AccountOwner>
-              <AccountItem>
-              <CopyText text={info.accountNumber} />
-              </AccountItem>
-            </div>
-          ))}
-        </AccountWrapper>
-        <br />
-          예시 <CopyText text="예시 계좌번호" />
-          <br />
-        <TabButton
-          style={{ backgroundColor: '#004D7A' }}
-          onClick={() => setOpenGroomAccount(!openGroomAccount)}
-        >
-      {/* <GiveWrap>
-      </GiveWrap> */}
+          Venmo <CopyText text="@d" />
+        </p>
+      </GiveWrap>
 
       <SectionHr />
-      <SectionHeader style={{ color: "#F08080" }}>💬 축하의 한마디</SectionHeader>
+      <SectionHeader style={{ color: "#F08080" }}>💬 Messages to us</SectionHeader>
       <WriteSectionSubHeader>
-        <p>신랑측</p>
-        <p>신부측</p>
+        <p>Groom's</p>
+        <p>Bride's</p>
       </WriteSectionSubHeader>
       <div style={{ clear: "both" }} />
       <TalkWrap>
@@ -875,13 +798,13 @@ const Home = () => {
           />
         ))}
       </TalkWrap>
-      <ThankYou>{writeDone ? "감사합니다." : ""}</ThankYou>
+      <ThankYou>{writeDone ? "Thank you." : ""}</ThankYou>
       {!writeDone && (
         <WriteButton
           visible={isWriteButtonShown}
           onClick={handleWriteButtonClick}
         >
-          😍 나도 한마디
+          😍 A word from me
         </WriteButton>
       )}
       {showWriteTalkModal && (
