@@ -680,24 +680,6 @@ const Home = () => {
         오혜근 · 홍영예의 딸 미란
       </GreetingP>
       <SectionHr />
-      <Button
-        style={{ backgroundColor: '#F08080', color: 'white' }}
-        onClick={() =>
-          setComponent(<AttendModal setComponent={setComponent} />)
-        }
-      >
-        <i
-          className="fa fa-calendar-check"
-          aria-hidden="true"
-          style={{
-            marginRight: '12px',
-            fontSize: '16px',
-            color: 'white',
-          }}
-        ></i>
-        참석여부 전달하기
-      </Button>
-      <SectionHr />
       <PhotoGrid>
         {Array.from(Array(imageSize), (_, i) => i).map((i) => (
           <li key={i}>
