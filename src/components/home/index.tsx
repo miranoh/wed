@@ -299,8 +299,8 @@ const GiveWrap = styled.div`
   line-height: 2;
 `;
 
-const [openGroomAccount, setOpenGroomAccount] = useState<boolean>(false);
-const [openBrideAccount, setOpenBrideAccount] = useState<boolean>(false);
+// const [openGroomAccount, setOpenGroomAccount] = useState<boolean>(false);
+// const [openBrideAccount, setOpenBrideAccount] = useState<boolean>(false);
 
 const AccountWrapper = styled.div`
   margin: 0 auto;
